@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Dodo Payments Assignment API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+security:
+  - ApiKeyAuth: []
+paths:
+  /health:
+    get:
+      security: []
+      responses:
+        "200":
+          description: OK
+  /api-keys:
+    post:
+      security: []
+      responses:
+        "200":
+          description: API key created
+  /customers:
+    post:
+      responses:
+        "200":
+          description: Customer created
+    get:
+      responses:
+        "200":
+          description: Customer list
+  /customers/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Customer }
+  /invoices:
+    post:
+      responses:
+        "200": { description: Invoice created }
+    get:
+      responses:
+        "200": { description: Invoice list }
+  /invoices/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Invoice }
+  /invoices/{id}/finalize:
+    post:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Invoice opened }
+        "409": { description: Invalid state transition }
+  /invoices/{id}/void:
+    post:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Invoice voided }
+  /invoices/{id}/writeoff:
+    post:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Invoice written off }
+  /invoices/{id}/pay:
+    post:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Payment succeeded }
+        "202": { description: Payment processing }
+        "402": { description: Payment failed }
+  /webhooks:
+    post:
+      responses:
+        "200": { description: Webhook endpoint created }
+  /webhooks/events:
+    get:
+      responses:
+        "200": { description: Webhook events }
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

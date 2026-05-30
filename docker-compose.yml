@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: public.ecr.aws/docker/library/postgres:16-alpine
+    environment:
+      POSTGRES_USER: dodo
+      POSTGRES_PASSWORD: dodo
+      POSTGRES_DB: dodo
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dodo -d dodo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  mock-psp:
+    build: .
+    command: ["mock-psp"]
+    environment:
+      BIND_ADDR: 0.0.0.0:8081
+    ports:
+      - "8081:8081"
+
+  invoice-service:
+    build: .
+    command: ["invoice-service"]
+    environment:
+      DATABASE_URL: postgres://dodo:dodo@postgres:5432/dodo
+      BIND_ADDR: 0.0.0.0:8080
+      MOCK_PSP_URL: http://mock-psp:8081
+      PAYMENT_TIMEOUT_SECONDS: 5
+      WEBHOOK_SECRET: dev_webhook_secret_change_me
+      SEED_API_KEY: dodo_live_dev_secret_key
+      RUST_LOG: info
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mock-psp:
+        condition: service_started
+
+volumes:
+  postgres-data:
