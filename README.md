@@ -95,5 +95,7 @@ cargo test
 ```
 
 ## Demo Video
-
-Demo video placeholder: add a short screen recording showing Docker Compose startup, Swagger, customer creation, invoice creation, finalization, payment, and webhook event listing.
+part 1:- https://www.loom.com/share/d3cc84c2463340abaf97e23d9649cc34
+paert2 :- https://www.loom.com/share/50db3fe452c94b619454179de4624415
+part 3 :- https://www.loom.com/share/382a1fb4b5114f29a398b7b2b7205b9d 
+In loom i find that for the free trial, we have 5 min limit, and I also don't have any other video recording app in my system, so I made 3 videos of 5 min
