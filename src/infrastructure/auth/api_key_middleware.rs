@@ -1,11 +1,12 @@
 use crate::{application::AppState, domain::repositories::ApiKeyRepository, shared::errors::AppError};
-use axum::{extract::FromRequestParts, http::request::Parts};
+use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
 use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Clone, Copy, Debug)]
 pub struct AuthBusiness(pub Uuid);
 
+#[async_trait]
 impl FromRequestParts<Arc<AppState>> for AuthBusiness {
     type Rejection = AppError;
 

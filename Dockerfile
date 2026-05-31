@@ -2,6 +2,7 @@ FROM public.ecr.aws/docker/library/rust:1-bookworm AS builder
 WORKDIR /app
 COPY Cargo.toml Cargo.lock* ./
 COPY src ./src
+COPY migrations ./migrations
 RUN cargo build --release --locked || cargo build --release
 
 FROM public.ecr.aws/docker/library/debian:bookworm-slim

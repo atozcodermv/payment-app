@@ -2,7 +2,10 @@ use argon2::{password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, Pas
 
 pub fn hash_api_key(key: &str) -> anyhow::Result<String> {
     let salt = SaltString::generate(&mut OsRng);
-    Ok(Argon2::default().hash_password(key.as_bytes(), &salt)?.to_string())
+    Argon2::default()
+        .hash_password(key.as_bytes(), &salt)
+        .map(|hash| hash.to_string())
+        .map_err(|err| anyhow::anyhow!("failed to hash api key: {err}"))
 }
 
 pub fn verify_api_key(key: &str, hash: &str) -> bool {

@@ -96,3 +96,4 @@ cargo test
 
 ## Demo Video
 
+Demo video placeholder: add a short screen recording showing Docker Compose startup, Swagger, customer creation, invoice creation, finalization, payment, and webhook event listing.
