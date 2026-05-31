@@ -22,36 +22,78 @@ dodo_live_dev_secret_key
 Create a customer:
 
 ```bash
-curl -X POST http://localhost:8080/customers \
-  -H "X-API-Key: dodo_live_dev_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"ada@example.com","name":"Ada Lovelace","metadata":{"tier":"gold"}}'
+$body = @{
+  email = "ada@example.com"
+  name = "Ada Lovelace"
+  metadata = @{
+    tier = "gold"
+  }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8080/customers" `
+  -Headers @{ "X-API-Key" = "dodo_live_dev_secret_key" } `
+  -ContentType "application/json" `
+  -Body $body
 ```
 
 Create an invoice. Replace `CUSTOMER_ID` with the customer id returned above.
 
 ```bash
-curl -X POST http://localhost:8080/invoices \
-  -H "X-API-Key: dodo_live_dev_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{"customer_id":"CUSTOMER_ID","currency":"USD","line_items":[{"description":"API credits","quantity":2,"unit_amount_cents":1500}]}'
+$invoiceBody = @{
+  customer_id = $customerId
+  currency = "USD"
+  line_items = @(
+    @{
+      description = "API credits"
+      quantity = 2
+      unit_amount_cents = 1500
+    }
+  )
+} | ConvertTo-Json -Depth 5
+
+$invoice = Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8080/invoices" `
+  -Headers @{ "X-API-Key" = "dodo_live_dev_secret_key" } `
+  -ContentType "application/json" `
+  -Body $invoiceBody
+
+$invoice
 ```
+Save invoice id automatically:
+$invoiceId = $invoice.id
 
 Finalize an invoice:
 
 ```bash
-curl -X POST http://localhost:8080/invoices/INVOICE_ID/finalize \
-  -H "X-API-Key: dodo_live_dev_secret_key"
+$finalizedInvoice = Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8080/invoices/$invoiceId/finalize" `
+  -Headers @{ "X-API-Key" = "dodo_live_dev_secret_key" }
+
+$finalizedInvoice
 ```
 
 Pay an invoice:
 
 ```bash
-curl -X POST http://localhost:8080/invoices/INVOICE_ID/pay \
-  -H "X-API-Key: dodo_live_dev_secret_key" \
-  -H "Idempotency-Key: demo-pay-001" \
-  -H "Content-Type: application/json" \
-  -d '{"payment_token":"tok_success"}'
+$payBody = @{
+  payment_token = "tok_success"
+} | ConvertTo-Json -Depth 5
+
+$successPayment = Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8080/invoices/$invoiceId/pay" `
+  -Headers @{
+    "X-API-Key" = "dodo_live_dev_secret_key"
+    "Idempotency-Key" = "payment-success-001"
+  } `
+  -ContentType "application/json" `
+  -Body $payBody
+
+$successPayment
 ```
 
 Other payment tokens: `tok_insufficient_funds`, `tok_card_declined`, `tok_timeout`, and `tok_network_error`.
@@ -59,17 +101,36 @@ Other payment tokens: `tok_insufficient_funds`, `tok_card_declined`, `tok_timeou
 Register a webhook endpoint:
 
 ```bash
-curl -X POST http://localhost:8080/webhooks \
-  -H "X-API-Key: dodo_live_dev_secret_key" \
-  -H "Content-Type: application/json" \
-  -d '{"url":"https://example.com/webhooks/dodo"}'
+$secondInvoiceBody = @{
+  customer_id = $customerId
+  currency = "USD"
+  line_items = @(
+    @{
+      description = "Decline demo invoice"
+      quantity = 1
+      unit_amount_cents = 2500
+    }
+  )
+} | ConvertTo-Json -Depth 5
+
+$secondInvoice = Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8080/invoices" `
+  -Headers @{ "X-API-Key" = "dodo_live_dev_secret_key" } `
+  -ContentType "application/json" `
+  -Body $secondInvoiceBody
+
+$secondInvoiceId = $secondInvoice.id
+$secondInvoice
 ```
 
 List webhook events:
 
 ```bash
-curl http://localhost:8080/webhooks/events \
-  -H "X-API-Key: dodo_live_dev_secret_key"
+Invoke-RestMethod `
+  -Method GET `
+  -Uri "http://localhost:8080/webhooks/events" `
+  -Headers @{ "X-API-Key" = "dodo_live_dev_secret_key" }
 ```
 
 Create a new API key:
